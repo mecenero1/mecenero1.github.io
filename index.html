@@ -10,13 +10,13 @@
 <meta property="og:locale" content="ru_RU">
 <meta property="og:site_name" content="mecenero">
 <meta property="og:url" content="https://mecenero1.github.io/">
-<meta property="og:image" content="https://mecenero1.github.io/preview-ink.jpg">
+<meta property="og:image" content="https://mecenero1.github.io/preview-bull.jpg">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="mecenero — сайты для кофеен, брендов и бизнеса">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://mecenero1.github.io/preview-ink.jpg">
+<meta name="twitter:image" content="https://mecenero1.github.io/preview-bull.jpg">
 <link rel="canonical" href="https://mecenero1.github.io/">
 <link rel="apple-touch-icon" href="https://mecenero1.github.io/apple-touch-icon-ink.png">
 <meta property="og:title" content="mecenero — сайты для бизнеса">
@@ -115,7 +115,12 @@ img,svg{max-width:100%}
 .anim.ready .hero-txt>*{opacity:1;transform:none}
 
 /* vitrine */
-.vit{grid-column:8/-1;grid-row:1/4;align-self:center;margin:0;perspective:1600px}
+.bull{grid-column:8/-1;grid-row:1/4;align-self:center;justify-self:center;margin:0;width:min(100%,calc(min(84svh,780px)*900/1394))}
+.bull-in{will-change:transform}
+.bull img{display:block;width:100%;height:auto}
+.anim .bull img{-webkit-mask:radial-gradient(closest-side,#000 62%,transparent) 52% 40%/0% 0% no-repeat;mask:radial-gradient(closest-side,#000 62%,transparent) 52% 40%/0% 0% no-repeat;transition:-webkit-mask-size 2.2s cubic-bezier(.5,.05,.2,1) .25s,mask-size 2.2s cubic-bezier(.5,.05,.2,1) .25s}
+.anim.ready .bull img{-webkit-mask-size:320% 320%;mask-size:320% 320%}
+.vit{margin:0}
 .frame{position:relative;border-radius:18px;padding:10px;background:#fff;border:1.5px solid var(--ink);box-shadow:0 34px 60px -40px rgba(20,19,18,.55);transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .7s var(--e)}
 .frame::after{content:"";position:absolute;inset:0;border-radius:20px;pointer-events:none;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.12) 45%,transparent 60%);background-size:250% 100%;background-position:var(--gx,100%) 0}
 .bar{display:flex;align-items:center;gap:10px;padding:2px 2px 10px}
@@ -290,7 +295,8 @@ button.cb{font:inherit;text-align:left;cursor:pointer;width:100%}
 @keyframes rpl{to{transform:scale(1);opacity:0}}
 .fine .spot{background-image:radial-gradient(260px circle at var(--sx,-300px) var(--sy,-300px),rgba(20,19,18,.06),transparent 70%)!important}
 .links a{display:inline-block;text-align:center}
-.vit{will-change:transform}
+.track{position:relative;height:clamp(96px,14vw,190px);overflow:hidden;background:linear-gradient(0deg,transparent 0 9px,rgba(20,19,18,.55) 9px 10.5px,transparent 10.5px)}
+.track canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
 
 /* intro + menu */
 .intro{position:fixed;inset:0;z-index:100;display:grid;place-items:center;background:var(--deep);animation:introSafe .5s 2.2s forwards}
@@ -312,7 +318,8 @@ html:not(.js) .intro{display:none}
 .menu[hidden]{display:none}
 
 @media(max-width:980px){
-.hlogo,.h1,.hero-txt,.vit{grid-column:1/-1;grid-row:auto}
+.hlogo,.h1,.hero-txt,.bull{grid-column:1/-1;grid-row:auto}
+.bull{width:min(100%,calc(min(66svh,560px)*900/1394))}
 .hlogo{width:min(520px,92%)}
 .vit{max-width:640px}
 .head{grid-template-columns:minmax(0,1fr)}
@@ -357,6 +364,7 @@ html{scroll-behavior:auto}
 .intro{display:none}
 .anim .w>span,.anim .hero-txt>*,.anim .mk,.anim .rv{transform:none!important;opacity:1!important;transition:none!important}
 .anim .hlogo .logo,.intro-logo .logo{clip-path:none!important;transition:none;animation:none}
+.anim .bull img{-webkit-mask:none;mask:none}
 .anim .sw{-webkit-mask-image:none;mask-image:none}
 .ring::after,.steam{animation:none}
 .flip,.frame,.menu{transition:none}
@@ -407,50 +415,15 @@ html{scroll-behavior:auto}
       <a class="works" style="--d:.18s" href="https://t.me/mecenerostd" target="_blank" rel="noopener noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="1.5"/><rect x="13" y="3" width="8" height="8" rx="1.5"/><rect x="3" y="13" width="8" height="8" rx="1.5"/><rect x="13" y="13" width="8" height="8" rx="1.5"/></svg><span>Мои работы — в&nbsp;Telegram-канале</span></a>
       <p class="hint" style="--d:.24s"><span class="ring" aria-hidden="true"></span><span id="hint">Коснитесь бумаги — расплывётся клякса</span></p>
     </div>
-    <figure class="vit" id="vit">
-      <div class="frame" id="frame">
-        <div class="bar">
-          <div class="url"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>ваш-сайт.рф</div>
-          <div class="seg" role="group" aria-label="Режим просмотра">
-            <button type="button" data-mode="mock" aria-pressed="true">Макет</button><button type="button" data-mode="code" aria-pressed="false">Код</button>
-          </div>
-        </div>
-        <div class="screen">
-          <div class="flip">
-            <div class="face mock" id="mockface">
-              <div class="m-top mk" style="--d:0s"><b>Утро</b><span>Меню</span><span>Адрес</span></div>
-              <div class="m-hero">
-                <div>
-                  <p class="m-h mk" style="--d:.1s">Кофе с&nbsp;собой с&nbsp;7:00</p>
-                  <p class="m-p mk" style="--d:.18s">Зерно местной обжарки</p>
-                  <span class="m-btn mk" style="--d:.26s">Смотреть меню</span>
-                </div>
-                <svg class="cup mk" style="--d:.34s" viewBox="0 0 120 100" aria-hidden="true"><ellipse cx="58" cy="88" rx="46" ry="7" fill="#d6c19f"/><path d="M26 42h60v16a30 30 0 0 1-60 0z" fill="#24170f"/><path d="M85 48h6a9.5 9.5 0 0 1 0 19h-8" fill="none" stroke="#24170f" stroke-width="6"/><ellipse cx="56" cy="42" rx="30" ry="5.5" fill="#8a5a3c"/><g class="steam"><path d="M45 32c-4-6 4-8 0-15M57 32c-4-6 4-8 0-15M69 32c-4-6 4-8 0-15" fill="none" stroke="#b39a78" stroke-width="3" stroke-linecap="round"/></g></svg>
-              </div>
-              <div class="m-tiles"><div class="mk" style="--d:.42s"><span>Капучино</span><b>220&nbsp;₽</b></div><div class="mk" style="--d:.48s"><span>Раф</span><b>260&nbsp;₽</b></div><div class="mk" style="--d:.54s"><span>Круассан</span><b>180&nbsp;₽</b></div></div>
-            </div>
-            <div class="face back code-f" aria-hidden="true"><span class="t">&lt;header</span> <span class="a">class</span>=<span class="s">"top"</span><span class="t">&gt;</span>
-  <span class="t">&lt;b&gt;</span>Утро<span class="t">&lt;/b&gt;</span>
-  <span class="t">&lt;a</span> <span class="a">href</span>=<span class="s">"#menu"</span><span class="t">&gt;</span>Меню<span class="t">&lt;/a&gt;</span>
-<span class="t">&lt;/header&gt;</span>
-<span class="t">&lt;section</span> <span class="a">class</span>=<span class="s">"hero"</span><span class="t">&gt;</span>
-  <span class="t">&lt;h1&gt;</span>Кофе с собой с 7:00<span class="t">&lt;/h1&gt;</span>
-  <span class="t">&lt;p&gt;</span>Зерно местной обжарки<span class="t">&lt;/p&gt;</span>
-  <span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"btn"</span> <span class="a">href</span>=<span class="s">"#menu"</span><span class="t">&gt;</span>
-    Смотреть меню
-  <span class="t">&lt;/a&gt;</span>
-<span class="t">&lt;/section&gt;</span></div>
-          </div>
-        </div>
-      </div>
-      <figcaption>Пример макета, кофейня вымышленная. Нажмите «Код», чтобы заглянуть внутрь.</figcaption>
-    </figure>
+    <figure class="bull" id="bull"><div class="bull-in" id="bullIn"><img src="bull.webp" alt="Бык и тореадор с красным плащом, рисунок тушью" width="900" height="1394" decoding="async" fetchpriority="high"></div></figure>
   </div>
 </section>
 
 <div class="kband" aria-hidden="true">
   <div class="krow" id="krow"><span>Сайты-визитки</span><i></i><span class="o">Для кофеен</span><i></i><span>Интернет-магазины</span><i></i><span class="o">Для брендов</span><i></i><span>Лендинги</span><i></i><span class="o">Для бизнеса</span><i></i><span>Сайты-визитки</span><i></i><span class="o">Для кофеен</span><i></i><span>Интернет-магазины</span><i></i><span class="o">Для брендов</span><i></i><span>Лендинги</span><i></i><span class="o">Для бизнеса</span><i></i></div>
 </div>
+
+<div class="track" id="track" aria-hidden="true"><canvas id="horse"></canvas></div>
 
 <section class="band sec" id="niches" aria-labelledby="niches-t">
   <div class="in">
@@ -603,8 +576,6 @@ $$('.acc').forEach(it=>{setAcc(it,it.classList.contains('open'));$('.acc-h',it).
 $$('.acc-h').forEach(b=>b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();b.style.setProperty('--x',(e.clientX-r.left)+'px')}));
 
 /* vitrine flip */
-const vit=$('#vit');
-$$('.seg button').forEach(b=>b.addEventListener('click',()=>{const code=b.dataset.mode==='code';vit.classList.toggle('code',code);$$('.seg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));$('.back').setAttribute('aria-hidden',String(!code));}));
 
 /* mobile menu */
 const menu=$('#menu'),burger=$('#burger');
@@ -653,7 +624,7 @@ vec3 col=vec3(.984,.979,.966)-.016*fib-.012*n2(p*8.);
 float ink=0.,red=0.;
 for(int i=0;i<7;i++){float fi=float(i);float sd=mod(fi,2.)<.5?1.:-1.;
 float r=(.4+.14*h11(fi+7.))*(nar?.8:1.);
-vec2 c=vec2(sd*(.5*ar-(nar?-.06:.1)-.05*h11(fi)),.08-fi*1.4-.25*h11(fi+3.));
+vec2 c=vec2(sd*(.5*ar-(nar?-.06:.1)-.05*h11(fi)),-1.05-fi*1.4-.25*h11(fi+3.));
 ink=1.-(1.-ink)*(1.-blot(p,c,r,fi*7.3)*(nar?.3:.42));}
 for(int j=0;j<${ND};j++){vec4 d=DR[j];float t=T-d.z;float sz=abs(d.w);
 if(sz>0.&&t>0.){bool tr=sz<.05;float life=tr?1.6:12.;
@@ -698,6 +669,7 @@ addEventListener('pointerdown',e=>{pdx=e.clientX;pdy=e.clientY;pdt=performance.n
 addEventListener('pointerup',e=>{if(Math.hypot(e.clientX-pdx,e.clientY-pdy)>10||performance.now()-pdt>450)return;clicks++;const sz=.05+Math.random()*.05;addDrop(e.clientX,e.clientY,clicks%4===0?-sz:sz,false)},{passive:true});
 addEventListener('mouseout',e=>{if(!e.relatedTarget){mx=-1e5;my=-1e5}});
 
+let bpx=0,bpy=0,bsx=0,bsy=0;
 /* lens cursor + magnets + tilt */
 const lens=$('#lens');let lx=-100,ly=-100;
 if(FINE&&!RM){
@@ -707,18 +679,31 @@ if(FINE&&!RM){
  const CH='абвгдеёжзийклмнопрстуфхцчшщыэюя';
  $$('.links a').forEach(a=>a.addEventListener('pointerenter',()=>{if(a._s)return;const t=a.textContent;a._s=1;a.style.minWidth=a.offsetWidth+'px';let f=0;const tick=()=>{f++;const k=f>>1;a.textContent=t.split('').map((c,i)=>c===' '||i<k?c:CH[(Math.random()*CH.length)|0]).join('');if(k<t.length)requestAnimationFrame(tick);else{a.textContent=t;a._s=0}};tick()}));
  $$('.mag').forEach(el=>{el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect();const dx=e.clientX-(r.left+r.width/2),dy=e.clientY-(r.top+r.height/2);el.style.setProperty('--mx',(dx*.18).toFixed(1)+'px');el.style.setProperty('--my',(dy*.28).toFixed(1)+'px')});el.addEventListener('pointerleave',()=>{el.style.setProperty('--mx','0px');el.style.setProperty('--my','0px')})});
- const fr=$('#frame'),hero=$('.hero');
- hero.addEventListener('pointermove',e=>{const r=fr.getBoundingClientRect();const nx=(e.clientX-(r.left+r.width/2))/innerWidth,ny=(e.clientY-(r.top+r.height/2))/innerHeight;fr.style.setProperty('--ry',(nx*10).toFixed(2)+'deg');fr.style.setProperty('--rx',(-ny*8).toFixed(2)+'deg');fr.style.setProperty('--gx',(100-((e.clientX/innerWidth)*100)).toFixed(1)+'%')});
- hero.addEventListener('pointerleave',()=>{fr.style.setProperty('--ry','0deg');fr.style.setProperty('--rx','0deg')});
+ const hero=$('.hero');
+ hero.addEventListener('pointermove',e=>{bpx=(e.clientX/innerWidth-.5)*-14;bpy=(e.clientY/innerHeight-.5)*-10},{passive:true});
+ hero.addEventListener('pointerleave',()=>{bpx=0;bpy=0});
 }
 
 if(!RM)document.addEventListener('pointerdown',e=>{const b=e.target.closest('.btn,.cb,.ntab,.seg button');if(!b)return;const r=b.getBoundingClientRect();const d=Math.max(r.width,r.height)*2.2;const sp=document.createElement('span');sp.className='rpl';sp.style.cssText=`width:${d}px;height:${d}px;left:${(e.clientX-r.left-d/2).toFixed(0)}px;top:${(e.clientY-r.top-d/2).toFixed(0)}px`;b.appendChild(sp);setTimeout(()=>sp.remove(),800)});
 
 /* ---------- frame loop ---------- */
-const nav=$('#nav'),krow=$('#krow'),kband=$('.kband'),tl=$('#tl'),steps=$$('.st'),progEl=$('#progress'),vitEl=$('#vit');
+const nav=$('#nav'),krow=$('#krow'),kband=$('.kband'),tl=$('#tl'),steps=$$('.st'),progEl=$('#progress'),bullEl=$('#bullIn');
 let kx=0,prevY=scrollY,kHalf=0,acc=0,nf=0,lastT=performance.now(),fadeF=0,dirty=true;
 let kVis=true,tlVis=false;
 const visIO=new IntersectionObserver(es=>{for(const e of es){if(e.target===kband)kVis=e.isIntersecting;else tlVis=e.isIntersecting}},{rootMargin:'100px 0px'});visIO.observe(kband);visIO.observe(tl);
+/* running horse: 9 drawn poses, blended in between so it moves smoothly at the screen's refresh rate */
+const hc=$('#horse'),hx=hc.getContext('2d'),himg=new Image();himg.decoding='async';himg.src='horse.webp';
+const HN=9,HW=533,HH=300,HCYC=720/1000;let hVis=false,hLoaded=false;himg.onload=()=>{hLoaded=true};
+const hIO=new IntersectionObserver(es=>{hVis=es[0].isIntersecting});hIO.observe($('#track'));
+function drawHorse(now){if(!hVis||!hLoaded)return;const dpr=Math.min(devicePixelRatio||1,2),cw=hc.clientWidth,ch=hc.clientHeight,bw=Math.round(cw*dpr),bh=Math.round(ch*dpr);
+ if(hc.width!==bw||hc.height!==bh){hc.width=bw;hc.height=bh}
+ hx.setTransform(dpr,0,0,dpr,0,0);hx.clearRect(0,0,cw,ch);
+ const H=ch*.86,W=H*HW/HH,top=ch-H-8;const t=RM?0:now/1000;
+ const fp=(t/HCYC*HN)%HN,i=Math.floor(fp),f=fp-i,n=(i+1)%HN;
+ const speed=W*1.25/HCYC,period=(cw+W*1.3)/speed+.9,x=RM?(cw-W)/2:-W*1.1+(t%period)*speed;
+ if(x>cw)return;
+ hx.globalAlpha=1;hx.drawImage(himg,i*HW,0,HW,HH,x,top,W,H);
+ if(f>.02){hx.globalAlpha=f;hx.drawImage(himg,n*HW,0,HW,HH,x,top,W,H)}hx.globalAlpha=1}
 const measureK=()=>{kHalf=krow.scrollWidth/2};measureK();addEventListener('resize',measureK);addEventListener('load',measureK);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(measureK);
 addEventListener('scroll',()=>{dirty=true},{passive:true});
 
@@ -735,7 +720,8 @@ function frame(now){
  if(tlVis){const tr=tl.getBoundingClientRect();const p=Math.min(1,Math.max(0,(vh*.62-tr.top)/tr.height));tl.style.setProperty('--p',p.toFixed(4));const lim=tr.top+p*tr.height;steps.forEach(s=>s.classList.toggle('lit',s.getBoundingClientRect().top+20<lim))}
  /* progress, parallax, scenes */
  progEl.style.transform=`scaleX(${pg.toFixed(4)})`;
- if(!RM&&y<vh*1.6)vitEl.style.transform=`translate3d(0,${(y*.08).toFixed(1)}px,0)`;
+ if(!RM&&y<vh*1.6){bsx+=(bpx-bsx)*.06;bsy+=(bpy-bsy)*.06;bullEl.style.transform=`translate3d(${bsx.toFixed(2)}px,${(y*.1+bsy).toFixed(2)}px,0)`}
+ drawHorse(now);
  if(needSize){needSize=false;size()}
  /* lens */
  if(FINE&&!RM){lx+=(mx-lx)*.2;ly+=(my-ly)*.2;lens.style.transform=`translate3d(${lx.toFixed(1)}px,${ly.toFixed(1)}px,0)`}
