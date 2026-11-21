@@ -49,6 +49,9 @@ img,svg{max-width:100%}
 .skip:focus{top:12px}
 #water{position:fixed;left:0;top:0;width:100%;height:100vh;height:100lvh;z-index:0;display:block;pointer-events:none;background:transparent}
 .wrap{position:relative;z-index:1;overflow-x:clip}
+.washes{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:-1;opacity:0;transition:opacity 1.2s ease}
+.ready .washes{opacity:1}
+.wash{position:absolute;display:block}
 .band{padding-left:max(var(--gut),env(safe-area-inset-left,0px));padding-right:max(var(--gut),env(safe-area-inset-right,0px))}
 .in{max-width:1240px;margin:0 auto}
 
@@ -401,6 +404,7 @@ html{scroll-behavior:auto}
 </div>
 
 <div class="wrap">
+<div class="washes" id="washes" aria-hidden="true"></div>
 <main id="main">
 <section class="hero band" id="top">
   <div class="hero-in">
@@ -599,37 +603,32 @@ const go=()=>{H.classList.add('ready');readyAt=performance.now();if(intro){intro
 if(RM||seen){if(intro)intro.remove();requestAnimationFrame(go)}else setTimeout(go,950);
 
 /* ---------- ink on paper (WebGL) ---------- */
+/* Washes are painted once into canvases that scroll with the page; the live layer only draws fresh ink drops and sleeps when none are left. */
 const cv=$('#water');
 const NC=8,NT=16,ND=NC+NT;
-let gl=null,prog=null,U={},q=FINE?.8:.5;const qMax=FINE?1:.6,qMin=.3;let base=1e9;
-let pr=1,t0=performance.now();
+let gl=null,prog=null,U={},q=FINE?1:.75;const qMax=1,qMin=.4;let base=1e9;
+let pr=1,t0=performance.now(),inkUntil=0;
 const drops=new Float32Array(ND*4);let ciI=0,trI=0,clicks=0;
 const VS='attribute vec2 a;void main(){gl_Position=vec4(a,0.,1.);}';
-const FS=`uniform vec2 R;uniform float T,S,F;uniform vec4 DR[${ND}];
+const FS=`uniform vec2 R;uniform float T,S;uniform vec4 DR[${ND}];uniform vec4 WS;
 float h21(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
-float h11(float p){p=fract(p*.1031);p*=p+33.33;p*=p+p;return fract(p);}
 float n2(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(h21(i),h21(i+vec2(1.,0.)),f.x),mix(h21(i+vec2(0.,1.)),h21(i+vec2(1.,1.)),f.x),f.y);}
 float fb(vec2 p){float v=0.,a=.5;for(int i=0;i<3;i++){v+=a*n2(p);p=mat2(1.6,1.2,-1.2,1.6)*p+vec2(3.1,1.7);a*=.5;}return v*1.14;}
 float blot(vec2 p,vec2 c,float r,float sd){vec2 q=(p-c)/r;float l=length(q);if(l>1.7)return 0.;
-vec2 w=vec2(fb(q*1.5+sd+T*.015),n2(q*2.2+sd+4.3-T*.012))-.5;
+vec2 w=vec2(fb(q*1.5+sd),n2(q*2.2+sd+4.3))-.5;
 float n=fb(q*3.2+w*1.6+sd*1.7);
 float e=l+.6*w.x+.32*(n-.5);
 float body=1.-smoothstep(.7,.78,e);
 float rim=smoothstep(.42,.76,e)*body;
 return clamp(body*(.3+.55*n)+rim*.55,0.,1.);}
-void main(){vec2 fc=gl_FragCoord.xy;vec2 uv=fc/R;float ar=R.x/R.y;bool nar=ar<.9;
-vec2 p=(fc-.5*R)/R.y;p.y-=S;
-float ink=0.,red=0.;
-for(int i=0;i<7;i++){float fi=float(i);float sd=mod(fi,2.)<.5?1.:-1.;
-float r=(.4+.14*h11(fi+7.))*(nar?.8:1.);
-vec2 c=vec2(sd*(.5*ar-(nar?-.06:.1)-.05*h11(fi)),-1.05-fi*1.4-.25*h11(fi+3.));
-ink=1.-(1.-ink)*(1.-blot(p,c,r,fi*7.3)*(nar?.3:.42));}
+void main(){vec2 fc=gl_FragCoord.xy;float ink=0.,red=0.;
+if(WS.z>.5){ink=blot((fc/R-.5)*2.4,vec2(0.),1.,WS.x)*WS.y;}
+else{vec2 p=(fc-.5*R)/R.y;p.y-=S;
 for(int j=0;j<${ND};j++){vec4 d=DR[j];float t=T-d.z;float sz=abs(d.w);
 if(sz>0.&&t>0.){bool tr=sz<.05;float life=tr?1.6:12.;
 if(t<life){float g=1.-exp(-t*(tr?7.:2.4));float fd=1.-smoothstep(life*.55,life,t);
 float b=blot(p,d.xy,sz*(.25+.75*g),float(j)*3.7+fract(d.z)*40.)*fd;
-if(d.w<0.)red=1.-(1.-red)*(1.-b);else ink=1.-(1.-ink)*(1.-b*(tr?.7:1.));}}}
-ink*=F;red*=F;
+if(d.w<0.)red=1.-(1.-red)*(1.-b);else ink=1.-(1.-ink)*(1.-b*(tr?.7:1.));}}}}
 if(ink+red<.002){gl_FragColor=vec4(0.);return;}
 float gr=.85+.3*h21(floor(fc*.6));
 vec3 ic=mix(vec3(.46,.46,.48),vec3(.05,.047,.045),smoothstep(.12,.8,ink));
@@ -648,18 +647,33 @@ function initGL(){
  gl.useProgram(prog);
  const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
  const al=gl.getAttribLocation(prog,'a');gl.enableVertexAttribArray(al);gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
- ['R','T','S','F','DR'].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+ ['R','T','S','DR','WS'].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
  return true}
 function size(){const w=cv.clientWidth||innerWidth,h=cv.clientHeight||innerHeight;pr=Math.min(devicePixelRatio||1,2)*q;const bw=Math.max(1,Math.round(w*pr)),bh=Math.max(1,Math.round(h*pr));if(cv.width!==bw||cv.height!==bh){cv.width=bw;cv.height=bh;if(gl)gl.viewport(0,0,bw,bh)}}
 let glOK=initGL();size();
 cv.addEventListener('webglcontextlost',e=>{e.preventDefault();glOK=false});
 cv.addEventListener('webglcontextrestored',()=>{glOK=initGL();size()});
 let needSize=false;addEventListener('resize',()=>{needSize=true});
+const washBox=$('#washes');let washW=0;
+const J=[.31,.77,.12,.58,.93,.44,.66,.2,.85];
+function genWashes(){if(!glOK)return;const vw=innerWidth,vh=innerHeight,ar=vw/vh,nar=ar<.9,dpr=Math.min(devicePixelRatio||1,2);
+ const docH=washBox.offsetHeight||document.documentElement.scrollHeight;washW=vw;washBox.textContent='';
+ const w0=cv.width,h0=cv.height;
+ try{for(let i=0;i<7;i++){const sd=i%2?-1:1,r=(.4+.14*J[i])*(nar?.8:1);
+  const cx=sd*(.5*ar-(nar?-.06:.1)-.05*J[i+1]),cy=-1.05-i*1.4-.25*J[i+2];
+  const D=2.4*r*vh,L=.5*vw+cx*vh-D/2,Tp=vh*(.5-cy)-D/2;if(Tp>docH)break;
+  const res=Math.max(64,Math.round(Math.min(560,D*dpr*.55)));
+  cv.width=res;cv.height=res;gl.viewport(0,0,res,res);gl.uniform2f(U.R,res,res);gl.uniform4f(U.WS,i*7.3,nar?.3:.42,1,0);gl.drawArrays(gl.TRIANGLES,0,3);
+  const c=document.createElement('canvas');c.width=res;c.height=res;c.getContext('2d').drawImage(cv,0,0);
+  c.className='wash';c.style.cssText=`left:${L.toFixed(0)}px;top:${Tp.toFixed(0)}px;width:${D.toFixed(0)}px;height:${D.toFixed(0)}px`;washBox.appendChild(c)}}catch(e){}
+ gl.uniform4f(U.WS,0,0,0,0);cv.width=w0;cv.height=h0;gl.viewport(0,0,w0,h0);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT)}
+genWashes();addEventListener('load',genWashes);
+let washT=0;addEventListener('resize',()=>{clearTimeout(washT);washT=setTimeout(()=>{if(innerWidth!==washW)genWashes()},300)});
 
 /* pointer → ink */
 let mx=-1e5,my=-1e5,lastDrop=0,lrx=0,lry=0,sS=scrollY,pdx=0,pdy=0,pdt=0;
 const nowT=()=>(performance.now()-t0)/1000;
-function addDrop(cx,cy,sz,trail){if(RM)return;const w=cv.clientWidth,h=cv.clientHeight;const x=(cx-.5*w)/h,y=(.5*h-cy)/h-sS/h;let i;if(trail){i=NC+trI;trI=(trI+1)%NT}else{i=ciI;ciI=(ciI+1)%NC}drops.set([x,y,nowT(),sz],i*4)}
+function addDrop(cx,cy,sz,trail){if(RM)return;const w=cv.clientWidth,h=cv.clientHeight;const x=(cx-.5*w)/h,y=(.5*h-cy)/h-sS/h;let i;if(trail){i=NC+trI;trI=(trI+1)%NT}else{i=ciI;ciI=(ciI+1)%NC}drops.set([x,y,nowT(),sz],i*4);inkUntil=Math.max(inkUntil,nowT()+(trail?1.7:12.1))}
 addEventListener('pointermove',e=>{if(e.pointerType!=='mouse')return;mx=e.clientX;my=e.clientY;const t=performance.now(),dist=Math.hypot(mx-lrx,my-lry);if(t-lastDrop>40&&dist>12){addDrop(mx,my,.012+Math.min(dist,80)/80*.012,true);lastDrop=t;lrx=mx;lry=my}},{passive:true});
 addEventListener('pointerdown',e=>{pdx=e.clientX;pdy=e.clientY;pdt=performance.now()},{passive:true});
 addEventListener('pointerup',e=>{if(Math.hypot(e.clientX-pdx,e.clientY-pdy)>10||performance.now()-pdt>450)return;clicks++;const sz=.05+Math.random()*.05;addDrop(e.clientX,e.clientY,clicks%4===0?-sz:sz,false)},{passive:true});
@@ -703,36 +717,31 @@ function drawHorse(now){if(!hVis||!hLoaded)return;const dpr=Math.min(devicePixel
 const measureK=()=>{kHalf=krow.scrollWidth/2};measureK();addEventListener('resize',measureK);addEventListener('load',measureK);if(document.fonts&&document.fonts.ready)document.fonts.ready.then(measureK);
 addEventListener('scroll',()=>{dirty=true},{passive:true});
 
+let navOn=null,stepTops=[],tlH=1,inkClear=true;
+const measureSteps=()=>{stepTops=steps.map(st=>st.offsetTop);tlH=tl.offsetHeight||1};measureSteps();addEventListener('resize',measureSteps);addEventListener('load',measureSteps);
 function frame(now){
  const dt=now-lastT;lastT=now;
+ /* reads */
  const y=scrollY,vh=innerHeight,max=Math.max(1,document.documentElement.scrollHeight-vh);
- const v=y-prevY;prevY=y;
- sS+=(y-sS)*(RM?1:.12);
+ const tlTop=tlVis?tl.getBoundingClientRect().top:0;
+ const v=y-prevY;prevY=y;sS=y;
  const pg=Math.min(1,Math.max(0,y/max));
- nav.classList.toggle('on',y>24);
- /* kinetic band */
+ /* writes */
+ const on=y>24;if(on!==navOn){navOn=on;nav.classList.toggle('on',on)}
  if(kVis&&kHalf>0){if(!RM)kx-=.45+v*.35;kx=((kx%kHalf)-kHalf)%kHalf;const sk=RM?0:Math.max(-7,Math.min(7,-v*.12));krow.style.transform=`translate3d(${kx.toFixed(1)}px,0,0) skewX(${sk.toFixed(2)}deg)`}
- /* timeline */
- if(tlVis){const tr=tl.getBoundingClientRect();const p=Math.min(1,Math.max(0,(vh*.62-tr.top)/tr.height));tl.style.setProperty('--p',p.toFixed(4));const lim=tr.top+p*tr.height;steps.forEach(s=>s.classList.toggle('lit',s.getBoundingClientRect().top+20<lim))}
- /* progress, parallax, scenes */
+ if(tlVis){const p=Math.min(1,Math.max(0,(vh*.62-tlTop)/tlH));tl.style.setProperty('--p',p.toFixed(4));const lim=p*tlH;steps.forEach((st,i)=>{const L=stepTops[i]+20<lim;if(st._l!==L){st._l=L;st.classList.toggle('lit',L)}})}
  progEl.style.transform=`scaleX(${pg.toFixed(4)})`;
  if(!RM&&y<vh*1.6){bsx+=(bpx-bsx)*.06;bsy+=(bpy-bsy)*.06;bullEl.style.transform=`translate3d(${bsx.toFixed(2)}px,${(y*.1+bsy).toFixed(2)}px,0)`}
  drawHorse(now);
- if(needSize){needSize=false;size()}
- /* lens */
  if(FINE&&!RM){lx+=(mx-lx)*.2;ly+=(my-ly)*.2;lens.style.transform=`translate3d(${lx.toFixed(1)}px,${ly.toFixed(1)}px,0)`}
- /* water */
- if(glOK){
-  const anim=!RM;
-  if(anim||dirty){
-   if(readyAt)fadeF=Math.min(1,(now-readyAt)/1000);else fadeF=Math.min(.35,fadeF+.01);
-   if(RM)fadeF=1;
-   const T=anim?nowT():14;
-   gl.uniform2f(U.R,cv.width,cv.height);gl.uniform1f(U.T,T);gl.uniform1f(U.S,sS/(cv.clientHeight||vh));gl.uniform1f(U.F,1-Math.pow(1-fadeF,3));
-   gl.uniform4fv(U.DR,drops);
-   gl.drawArrays(gl.TRIANGLES,0,3);dirty=false;
-   if(anim&&dt<100){acc+=dt;nf++;if(nf>=50){const avg=acc/nf;acc=0;nf=0;base=Math.max(6,Math.min(base,avg));if(avg>base*1.3&&q>qMin){q=Math.max(qMin,q*.86);needSize=true}else if(avg<base*1.05&&q<qMax){q=Math.min(qMax,q*1.05);needSize=true}}}
-  }
+ /* live ink: only while fresh drops exist */
+ if(glOK){const T=nowT();
+  if(T<inkUntil){
+   if(needSize){needSize=false;size()}
+   gl.uniform2f(U.R,cv.width,cv.height);gl.uniform1f(U.T,T);gl.uniform1f(U.S,sS/(cv.clientHeight||vh));gl.uniform4fv(U.DR,drops);
+   gl.drawArrays(gl.TRIANGLES,0,3);inkClear=false;
+   if(dt<100){acc+=dt;nf++;if(nf>=50){const avg=acc/nf;acc=0;nf=0;base=Math.max(6,Math.min(base,avg));if(avg>base*1.3&&q>qMin){q=Math.max(qMin,q*.86);needSize=true}else if(avg<base*1.05&&q<qMax){q=Math.min(qMax,q*1.05);needSize=true}}}
+  }else if(!inkClear){gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT);inkClear=true;acc=0;nf=0}
  }
  requestAnimationFrame(frame);
 }
